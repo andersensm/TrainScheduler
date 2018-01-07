@@ -15,8 +15,8 @@
 
 <body>
   <div class="container">
-    <div class="jumbotron bg-primary text-white">
-      <h1>Train Scheduler</h1>
+    <div class="jumbotron bg-primary text-white" id="image">
+      <h1>ALL ABOARD!</h1>
     </div>
     <table class="table table-hover">
       <thead>
@@ -60,8 +60,19 @@
       </tbody>
     </table>
     <div class="card">
-      <div class="card-header text-white bg-primary">Header</div>
+      <div class="card-header text-white bg-primary">Add Train</div>
       <div class="card-body">
+        <div class="form-group">
+          <label class="col-form-label" for="inputDefault">Train Name</label>
+          <input type="text" class="form-control" placeholder="Example: Ticket information" id="trainName">
+          <label class="col-form-label">Destination</label>
+          <input type="text" class="form-control" placeholder="Example: Destination location" id="destination">
+          <label class="col-form-label">First Train Time(HH:mm - military time)</label>
+          <input type="text" class="form-control" placeholder="Example: Arrival time" id="arrivalTime">
+          <label class="col-form-label">Frequency(min)</label>
+          <input type="text" class="form-control" placeholder="Example: Travel time" id="frequency">
+        </div>
+        <button type="submit" class="btn btn-primary" id="submit">Add Train to Schedule</button>
 
       </div>
     </div>
