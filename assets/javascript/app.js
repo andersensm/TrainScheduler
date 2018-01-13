@@ -11,6 +11,7 @@ firebase.initializeApp(config);
 //store in variable database
 var database = firebase.database()
 
+
 //function to clear Form
 function clearForm() {
   $("#trainName, #destination, #arrivalTime, #frequency").val("")
@@ -26,7 +27,7 @@ function getData() {
     var tDestination = $("<td>").text(childSnapShot.destination)
     var tArrivalTime = $("<td>").text(childSnapShot.arrivalTime)
     var tFrequency = $("<td>").text(childSnapShot.frequency)
-    var tMinsAway = $("<td>").text(childSnapShot.minsAway)
+    var tMinsAway = $("<td id='minsAway'>")
     tRow.append(tName,tDestination,tArrivalTime,tFrequency,tMinsAway)
     tBody.append(tRow)
   })
@@ -34,13 +35,24 @@ function getData() {
 //calculate mins away from current time
 function displayMinsAway(){
   var now = moment().format("HH:mm");
-  console.log(now)
-  return now;
+  console.log("current military time", now)
+
+
+
   /*
   var timeForm = moment(arrivalTime).to(moment(now))
   return timeForm;
   */
 }
+//convert arrivalTime from military to regular am/pm in table
+function convertToRegTime(arrivalTime) {
+
+    var regTime = moment(arrivalTime).format('hh:mm a')
+    return regTime;
+
+}
+
+
 //form on click submit
 $("#submit").on("click", function(event) {
   //prevent HTML page reset
@@ -48,18 +60,20 @@ $("#submit").on("click", function(event) {
   //call function to gather form values
   var name = $("#trainName").val().trim()
   var destination = $("#destination").val().trim()
-  var arrivalTime = $("#arrivalTime").val().trim()
+  var arrivalTime = moment((JSON.stringify($("#arrivalTime").val().trim())), "HH:mm").format('hh:mm a')
   var frequency = $("#frequency").val().trim()
+  var duration = moment.duration(frequency, 'm')
   var minsAway = displayMinsAway()
   //log Form values
-  console.log(name,destination,arrivalTime,frequency)
+  console.log(name,destination,arrivalTime,duration)
+
+
   //set firebase
   database.ref().push({
     name: name,
     destination: destination,
     arrivalTime: arrivalTime,
-    frequency: frequency,
-    minsAway: minsAway
+    frequency: frequency
   })
   //post data from submitted form to HTML table
   getData(clearForm());
