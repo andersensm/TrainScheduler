@@ -18,15 +18,16 @@ function clearForm() {
 function getData() {
   database.ref().on("child_added", function(snapshot) {
     var childSnapShot = snapshot.val()
-    //make the tbody, tr,td to be populated with the values gathered from the child_added
+    //Make the tbody, tr, td to be populated with the values gathered from the child_added
     var tBody = $("tBody")
     var tRow = $("<tr class='table-secondary'>")
     var tName = $("<th scope='row'>").text(childSnapShot.name)
     var tDestination = $("<td>").text(childSnapShot.destination)
+    var tFirstTrain = $("<td>").text(childSnapShot.firstTrain)
     var tArrivalTime = $("<td>").text(childSnapShot.arrivalTime)
     var tFrequency = $("<td>").text(childSnapShot.frequency)
     var tMinsAway = $("<td>").text(childSnapShot.minsAway)
-    tRow.append(tName,tDestination,tArrivalTime,tFrequency,tMinsAway)
+    tRow.append(tName,tDestination,tFirstTrain,tArrivalTime,tFrequency,tMinsAway)
     tBody.append(tRow)
   })
 }
@@ -37,28 +38,31 @@ $("#submit").on("click", function(event) {
   //Call function to gather form values
   var name = $("#trainName").val().trim()
   var destination = $("#destination").val().trim()
-  var firstTrain = $("#firstTrain").val().trim()
+  var firstTrainJson = moment((JSON.stringify($("#firstTrain").val().trim())), "HH:mm").format("hh:mm a")
+  var firstTrain = moment($("#firstTrain").val().trim(), "HH:mm")
   var frequency = $("#frequency").val().trim()
   //Log Form values
   console.log("form values: ", name, destination, firstTrain, frequency)
-  //First Train -1 year
-  firstTime = moment(firstTrain, "HH:mm").subtract(1, "years")
  //Minute Difference between Current Time and first train
-  var diffTime = moment().diff(moment(firstTime), "minutes")
+  var diffTime = moment().diff(moment(firstTrain), "minutes")
   console.log("diffTime", diffTime)
   //Calculates remainder between difference and frequency of arrivals
   var tRemainder = diffTime % frequency
   console.log("tRemainder", tRemainder)
-  //Calculates how often they travel and the remainder
+  //Calculates time until next Train arrival
   var minutesToArrival = frequency - tRemainder
   console.log("minutesToArrival", minutesToArrival)
-  //
+  //Adds the minutes to next arrival calulation to the "next arrival" object
   var nextTrain = moment().add(minutesToArrival, "minutes")
-  var nextTrainFormat = moment(nextTrain).format('hh:mm a')
+  console.log("nextTrain: ", nextTrain)
+  //Turns "next arrival" object to display out of HH:mm into standard time with AM/PM
+  var nextTrainFormat = moment(nextTrain).format("hh:mm a")
+  console.log("nextTrainFormat: ", nextTrainFormat)
   //Set firebase
   database.ref().push({
     name: name,
     destination: destination,
+    firstTrain: firstTrainJson,
     arrivalTime: nextTrainFormat,
     frequency: frequency,
     minsAway: minutesToArrival
