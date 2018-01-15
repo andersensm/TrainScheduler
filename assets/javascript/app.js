@@ -8,15 +8,13 @@ var config = {
   messagingSenderId: "4373189865"
 };
 firebase.initializeApp(config);
-//store in variable database
+//Store in variable database
 var database = firebase.database()
-
-
-//function to clear Form
+//Function to clear Form
 function clearForm() {
   $("#trainName, #destination, #arrivalTime, #frequency").val("")
 }
-///get data from firebase
+///Get data from firebase
 function getData() {
   database.ref().on("child_added", function(snapshot) {
     var childSnapShot = snapshot.val()
@@ -27,54 +25,44 @@ function getData() {
     var tDestination = $("<td>").text(childSnapShot.destination)
     var tArrivalTime = $("<td>").text(childSnapShot.arrivalTime)
     var tFrequency = $("<td>").text(childSnapShot.frequency)
-    var tMinsAway = $("<td id='minsAway'>")
+    var tMinsAway = $("<td>").text(childSnapShot.minsAway)
     tRow.append(tName,tDestination,tArrivalTime,tFrequency,tMinsAway)
     tBody.append(tRow)
   })
 }
-//calculate mins away from current time
-function displayMinsAway(){
-  var now = moment().format("HH:mm");
-  console.log("current military time", now)
-
-
-
-  /*
-  var timeForm = moment(arrivalTime).to(moment(now))
-  return timeForm;
-  */
-}
-//convert arrivalTime from military to regular am/pm in table
-function convertToRegTime(arrivalTime) {
-
-    var regTime = moment(arrivalTime).format('hh:mm a')
-    return regTime;
-
-}
-
-
-//form on click submit
+//Form on click submit
 $("#submit").on("click", function(event) {
-  //prevent HTML page reset
+  //Prevent HTML page reset
   event.preventDefault()
-  //call function to gather form values
+  //Call function to gather form values
   var name = $("#trainName").val().trim()
   var destination = $("#destination").val().trim()
-  var arrivalTime = moment((JSON.stringify($("#arrivalTime").val().trim())), "HH:mm").format('hh:mm a')
+  var firstTrain = $("#firstTrain").val().trim()
   var frequency = $("#frequency").val().trim()
-  var duration = moment.duration(frequency, 'm')
-  var minsAway = displayMinsAway()
-  //log Form values
-  console.log(name,destination,arrivalTime,duration)
-
-
-  //set firebase
+  //Log Form values
+  console.log("form values: ", name, destination, firstTrain, frequency)
+  //First Train -1 year
+  firstTime = moment(firstTrain, "HH:mm").subtract(1, "years")
+ //Minute Difference between Current Time and first train
+  var diffTime = moment().diff(moment(firstTime), "minutes")
+  console.log("diffTime", diffTime)
+  //Calculates remainder between difference and frequency of arrivals
+  var tRemainder = diffTime % frequency
+  console.log("tRemainder", tRemainder)
+  //Calculates how often they travel and the remainder
+  var minutesToArrival = frequency - tRemainder
+  console.log("minutesToArrival", minutesToArrival)
+  //
+  var nextTrain = moment().add(minutesToArrival, "minutes")
+  var nextTrainFormat = moment(nextTrain).format('hh:mm a')
+  //Set firebase
   database.ref().push({
     name: name,
     destination: destination,
-    arrivalTime: arrivalTime,
-    frequency: frequency
+    arrivalTime: nextTrainFormat,
+    frequency: frequency,
+    minsAway: minutesToArrival
   })
-  //post data from submitted form to HTML table
+  //Post data from submitted form to HTML table
   getData(clearForm());
 })
